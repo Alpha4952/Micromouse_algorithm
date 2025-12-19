@@ -179,7 +179,7 @@ void explore(cell_type maze[][MAZE_SIZE], mouse_type *mouse)
             // Wall check: if there is a wall in the intended direction from the current cell, skip
             if ((maze[y][x].wall >> (3 - dir)) & 1) continue; // 1 = wall present
 
-            rotate(mouse, (float) dir + 1); // NESW are 1,2,3,4
+            rotateTo(mouse, (float) dir + 1); // NESW are 1,2,3,4
             forward(mouse);
             setWall(maze, mouse);
             moved = true;
@@ -230,22 +230,22 @@ void forward(mouse_type *mouse)
     if ((d >= 3.5f && d <= 4.0f) || (d >= 0.0f && d <= 0.5f)) mouse->x--; // W
 }
 
-void turnRight(mouse_type *mouse, float angle)
+void turnRight(mouse_type *mouse, float direction)
 {
-    mouse->direction = fmodf(mouse->direction + angle, 4.0f);
+    mouse->direction = fmodf(mouse->direction + direction, 4.0f);
     if (mouse->direction < 0.0f) mouse->direction += 4.0f;
 }
 
-void turnLeft(mouse_type *mouse, float angle)
+void turnLeft(mouse_type *mouse, float direction)
 {
-    mouse->direction = fmodf(mouse->direction - angle, 4.0f);
+    mouse->direction = fmodf(mouse->direction - direction, 4.0f);
     if (mouse->direction < 0.0f) mouse->direction += 4.0f;
 }
 
-void rotate(mouse_type *mouse, float goal_angle)
+void rotateTo(mouse_type *mouse, float goal_direction)
 {
-    printf("Rotating to %.2f\n", goal_angle);
-    float g = fmodf(goal_angle, 4.0f);
+    printf("Rotating to %.2f\n", goal_direction);
+    float g = fmodf(goal_direction, 4.0f);
     if (g < 0.0f) g += 4.0f;
 
     float diff = g - mouse->direction;
@@ -350,7 +350,7 @@ void goTo(cell_type maze[][MAZE_SIZE], mouse_type *mouse, int gx, int gy)
         if (dir != -1)
         {
             // Rotate to face the direction and move forward one cell
-            rotate(mouse, (float) dir + 1);
+            rotateTo(mouse, (float) dir + 1);
             forward(mouse);
             setWall(maze, mouse);
         }

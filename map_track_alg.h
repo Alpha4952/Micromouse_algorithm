@@ -56,19 +56,19 @@ void initMouseMaze (mouse_type *mouse, cell_type maze[][MAZE_SIZE]);
 void explore        (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
 
 // Auxiliary functions
-void   fetchMouseData (mouse_type mouse);
-int    readSensor     (mouse_type *mouse);
-void   forward        (mouse_type *mouse);     // move 1 cell_type straight
-void   turnRight      (mouse_type *mouse, float angle);
-void   turnLeft       (mouse_type *mouse, float angle);
-void   rotate         (mouse_type *mouse, float goal_angle);
-bool   isValid        (int x, int y);
-void   setWall        (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
-int    findPath       (cell_type maze[][MAZE_SIZE], int sx, int sy, int gx, int gy);
-void   goTo           (cell_type maze[][MAZE_SIZE], mouse_type *mouse, int gx, int gy);
-point_type  findNearestUnknown(cell_type maze[][MAZE_SIZE], int x, int y);
-void   returnToStart  (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
-void   calculateRoute (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
-void   renderMaze     (cell_type maze[][MAZE_SIZE]);
+void   fetchMouseData          (mouse_type mouse);
+int    readSensor              (mouse_type *mouse);
+void   forward                 (mouse_type *mouse);     // move 1 cell_type straight
+void   turnRight               (mouse_type *mouse, float direction);
+void   turnLeft                (mouse_type *mouse, float direction);
+void   rotateTo                (mouse_type *mouse, float goal_direction);
+bool   isValid                 (int x, int y);
+void   setWall                 (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
+int    findPath                (cell_type maze[][MAZE_SIZE], int sx, int sy, int gx, int gy);
+void   goTo                    (cell_type maze[][MAZE_SIZE], mouse_type *mouse, int gx, int gy);
+point_type  findNearestUnknown (cell_type maze[][MAZE_SIZE], int x, int y);
+void   returnToStart           (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
+void   calculateRoute          (cell_type maze[][MAZE_SIZE], mouse_type *mouse);
+void   renderMaze              (cell_type maze[][MAZE_SIZE]);
 
 #endif /* MAP_TRACK_ALG_H */
