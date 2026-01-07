@@ -14,5 +14,7 @@ int main(void)
     // Make the mouse go back to the start
     returnToStart(maze, &mouse);
 
+    goToOptimal(maze, &mouse, 8, 8);
+
     return 0;
 }

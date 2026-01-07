@@ -357,6 +357,110 @@ void goTo(cell_type maze[][MAZE_SIZE], mouse_type *mouse, int gx, int gy)
     }
 }
 
+int findOptimalPath(cell_type maze[][MAZE_SIZE], int sx, int sy, int gx, int gy)
+{
+    for (int y = 0; y < MAZE_SIZE; y++)
+    {
+        for (int x = 0; x < MAZE_SIZE; x++)
+        {
+            maze[y][x].previous_point = (point_type){-1, -1};
+            for(int d = 0; d<4; d++) maze[y][x].cost[d] = UINT16_MAX;
+        }
+    }
+
+    struct { uint8_t x, y, dir; } queue[MAZE_SIZE * MAZE_SIZE * 4];
+    int head = 0, tail = 0;
+
+    for (int d = 0; d < 4; d++) {
+        maze[sy][sx].cost[d] = 0;
+        queue[tail++] = (typeof(queue[0])){sx, sy, d};
+    }
+
+    while (head != tail)
+    {
+        uint8_t cx = queue[head].x;
+        uint8_t cy = queue[head].y;
+        uint8_t cd = queue[head].dir;
+        head = (head + 1) % (MAZE_SIZE * MAZE_SIZE * 4);
+
+        for (int nextDir = 0; nextDir < 4; nextDir++) {
+            // Wall check
+            if ((maze[cy][cx].wall >> (3 - nextDir)) & 1) continue;
+
+            int nx = cx + DELTA_X[nextDir];
+            int ny = cy + DELTA_Y[nextDir];
+
+            if (isValid(nx, ny) && (maze[ny][nx].known || (nx == gx && ny == gy))) {
+                // Logic: If new route is shorter than recorded, update and queue neighbors
+                int weight = (nextDir == cd) ? 1 : (1 + TURN_PENALTY);
+                int newDist = maze[cy][cx].cost[cd] + weight;
+
+                if (newDist < maze[ny][nx].cost[nextDir]) {
+                    maze[ny][nx].cost[nextDir] = newDist;
+                    maze[ny][nx].previous_point = (point_type){cx, cy};
+
+                    // Add to queue for propagation
+                    queue[tail] = (typeof(queue[0])){ (uint8_t)nx, (uint8_t)ny, (uint8_t)nextDir };
+                    tail = (tail + 1) % (MAZE_SIZE * MAZE_SIZE * 4);
+                }
+            }
+        }
+    }
+
+    // Return the cheapest cost among all directions at goal
+    int minGoalCost = INT_MAX;
+    for (int d = 0; d < 4; d++) {
+        if (maze[gy][gx].cost[d] < minGoalCost) minGoalCost = maze[gy][gx].cost[d];
+    }
+
+    return (minGoalCost >= INT_MAX) ? -1 : minGoalCost;
+}
+
+void goToOptimal(cell_type maze[][MAZE_SIZE], mouse_type *mouse, int gx, int gy)
+{
+    int total_cost = findOptimalPath(maze, mouse->x, mouse->y, gx, gy);
+
+    if (total_cost == -1) return;
+
+    point_type path[MAZE_SIZE * MAZE_SIZE];
+    int count = 0;
+
+    int x = gx, y = gy;
+    path[count++] = (point_type){x, y};
+
+    while (x != mouse->x || y != mouse->y)
+    {
+        point_type p = maze[y][x].previous_point;
+
+        if (p.x == -1 || p.y == -1) break;
+
+        path[count++] = p;
+        x = p.x;
+        y = p.y;
+    }
+
+    for (int i = count - 2; i >= 0; i--)
+    {
+        point_type next = path[i];
+        int dx = next.x - mouse->x;
+        int dy = next.y - mouse->y;
+
+        int dir = -1; // 0=N, 1=E, 2=S, 3=W
+        if      (dx ==  0 && dy == -1) dir = 0; // North
+        else if (dx ==  1 && dy ==  0) dir = 1; // East
+        else if (dx ==  0 && dy ==  1) dir = 2; // South
+        else if (dx == -1 && dy ==  0) dir = 3; // West
+
+        if (dir != -1)
+        {
+            rotateTo(mouse, (float)dir + 1);
+            forward(mouse);
+
+            setWall(maze, mouse);
+        }
+    }
+}
+
 point_type findNearestUnknown(cell_type maze[][MAZE_SIZE], int x, int y)
 {
     point_type queue[MAZE_SIZE * MAZE_SIZE];
